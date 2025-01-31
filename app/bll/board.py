@@ -110,6 +110,17 @@ class Board(BaseModel):
         return cls(words=formatted_words, agent_placements=agent_placements)
 
     def reveal_card(self, coordinate: Coordinate) -> AgentType:
+        # Ensure the guessed coordinate is within the bounds of the board
+        if not (
+            0 <= coordinate.x < len(self.words)
+            and 0 <= coordinate.y < len(self.words[0])
+        ):
+            raise ValueError("The guessed coordinate is out of bounds.")
+
+        # Ensure the guessed coordinate has not already been revealed
+        if self.words[coordinate.x][coordinate.y].card_type != AgentType.UNKNOWN:
+            raise ValueError("This coordinate has already been revealed.")
+
         agent_type = self.agent_placements[coordinate]
         self.words[coordinate.x][coordinate.y].card_type = agent_type
         self.discovered_agents.append(coordinate)

@@ -284,3 +284,47 @@ def test_check_game_end_black_card():
 
     # Validate that the game ends when the BLACK card is revealed
     assert game_status == GameEndStatus.BLACK_REVEALED
+
+
+def test_board_reveal_card_out_of_bounds():
+    words = [
+        [
+            Card(word="word1", card_type=AgentType.UNKNOWN),
+            Card(word="word2", card_type=AgentType.UNKNOWN),
+        ],
+        [
+            Card(word="word3", card_type=AgentType.UNKNOWN),
+            Card(word="word4", card_type=AgentType.UNKNOWN),
+        ],
+    ]
+    agent_placements = AgentPlacements.random(random_seed=42)
+    board = Board(words=words, agent_placements=agent_placements)
+
+    # Attempt to reveal a card outside the board's bounds
+    out_of_bounds_coord = Coordinate.from_tuple(3, 3)  # Out of bounds
+    with pytest.raises(ValueError, match="The guessed coordinate is out of bounds."):
+        board.reveal_card(out_of_bounds_coord)
+
+
+def test_board_reveal_card_already_revealed():
+    words = [
+        [
+            Card(word="word1", card_type=AgentType.UNKNOWN),
+            Card(word="word2", card_type=AgentType.UNKNOWN),
+        ],
+        [
+            Card(word="word3", card_type=AgentType.UNKNOWN),
+            Card(word="word4", card_type=AgentType.UNKNOWN),
+        ],
+    ]
+    agent_placements = AgentPlacements.random(random_seed=42)
+    board = Board(words=words, agent_placements=agent_placements)
+
+    coord = Coordinate.from_tuple(0, 0)
+
+    # Reveal the card for the first time
+    board.reveal_card(coord)
+
+    # Attempt to reveal the same card again, expecting an error
+    with pytest.raises(ValueError, match="This coordinate has already been revealed."):
+        board.reveal_card(coord)
