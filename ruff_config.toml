@@ -3,7 +3,7 @@ line-length = 88  # Match Black's default line length
 select = ["F", "E", "W", "C", "I", "B"]  # Commonly used linter rules
 # ignore = ["E501"]  # Optionally ignore line-length issues; leave it to a formatter like Black
 exclude = [
-    "**/data/*",  # Ignore migrations folder for Django-style projects
+    "**/data/*",        # Ignore data storage
     ".venv",            # Ignore virtual environment
     "__pycache__",      # Ignore compiled Python files
 ]
