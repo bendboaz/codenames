@@ -46,6 +46,9 @@ class Card(BaseModel):
     card_type: AgentType
 
 
+Player = Literal[AgentType.RED] | Literal[AgentType.BLUE]
+
+
 class GameState(BaseModel):
     game_id: str
     words: list[list[Card]]
