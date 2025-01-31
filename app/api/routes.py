@@ -1,15 +1,10 @@
 from fastapi import FastAPI, APIRouter, HTTPException
 from typing import Dict, Any
-from pydantic import BaseModel
 
-app = FastAPI()
+from app.api.schemas import GameState
+
 game_router = APIRouter(prefix="/game", tags=["game"])
 
-
-# Pydantic model for the game state
-class GameState(BaseModel):
-    board: str
-    status: str
 
 
 # Dictionary to hold mock game data for demonstration
@@ -66,7 +61,3 @@ async def get_game_status(game_id: int):
         raise HTTPException(status_code=404, detail="Game not found")
 
     return {"game_id": game_id, "status": game.status}
-
-
-# Mount the router to the FastAPI app
-app.include_router(game_router)

@@ -1,6 +1,8 @@
 # File: app/main.py
 from fastapi import FastAPI
 
+from app.api.routes import game_router
+
 app = FastAPI()
 
 
@@ -8,7 +10,5 @@ app = FastAPI()
 def read_root():
     return {"message": "Welcome to the FastAPI App!"}
 
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str = None):
-    return {"item_id": item_id, "query": q}
+# Mount the router to the FastAPI app
+app.include_router(game_router)
