@@ -1,45 +1,31 @@
 import uuid
-from pathlib import Path
-from typing import Literal
+from typing import Literal, TYPE_CHECKING
 
 from pydantic import BaseModel
 
 from app.bll.board import Board
 from app.bll.defaults import DEFAULT_BOARD_SIZE
 from app.bll.types import GameStatus, GameEndStatus, AgentType, GameState
-from app.dal.local_dal import LocalDataAccess
+
+if TYPE_CHECKING:
+    from app.dal.base_data_access import BaseDataAccess
 
 
 class Game(BaseModel):
-    id: str
+    game_id: str
     board: Board
     status: GameStatus
     game_end_status: GameEndStatus
     current_player: Literal[AgentType.RED] | Literal[AgentType.BLUE]
 
-    def __init__(
-        self,
-        game_id: str,
-        board: Board,
-        status: GameStatus,
-        game_end_status: GameEndStatus,
-        current_player: Literal[AgentType.RED] | Literal[AgentType.BLUE] | None,
-    ):
-        super().__init__()
+    def __init__(self, **kwargs):
+        if "current_player" in kwargs and kwargs.get("current_player") is None:
+            kwargs["current_player"] = kwargs["board"].agent_placements.starting_color
 
-        self.id = game_id
-        self.board = board
-        self.status = status
-        self.game_end_status = game_end_status
-        self.current_player = (
-            current_player
-            if current_player is not None
-            else self.board.agent_placements.starting_color
-        )
+        super().__init__(**kwargs)
 
     @classmethod
-    def new_game(cls):
-        words_provider = LocalDataAccess(Path("data"))
+    def new_game(cls, words_provider: "BaseDataAccess"):
         board = Board.random_with_words(
             words_provider.load_card_words()[:DEFAULT_BOARD_SIZE]
         )
