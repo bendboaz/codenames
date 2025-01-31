@@ -14,4 +14,9 @@ def get_empty_board(
 
 
 def change_player(player: Player) -> Player:
+    if player not in [AgentType.RED, AgentType.BLUE]:
+        raise ValueError(
+            f"Can only switch between {AgentType.RED} and {AgentType.BLUE} players, got {player}"
+        )
+
     return AgentType.BLUE if player == AgentType.RED else AgentType.RED

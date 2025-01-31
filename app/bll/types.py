@@ -1,6 +1,6 @@
 from enum import Enum
 
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 
@@ -28,12 +28,6 @@ class AgentType(Enum):
     UNKNOWN = "UNKNOWN"
 
 
-class GameStatus(Enum):
-    INITIALIZED = "initialized"
-    RUNNING = "running"
-    DONE = "done"
-
-
 class GameEndStatus(Enum):
     RED_VICTORY = "RED_VICTORY"
     BLUE_VICTORY = "BLUE_VICTORY"
@@ -49,8 +43,14 @@ class Card(BaseModel):
 Player = Literal[AgentType.RED] | Literal[AgentType.BLUE]
 
 
+class CurrentTurnState(BaseModel):
+    player: Player
+    clue: Optional[Clue] = None
+    guesses_made: int = 0
+
+
 class GameState(BaseModel):
     game_id: str
     words: list[list[Card]]
-    current_player: Literal[AgentType.RED] | Literal[AgentType.BLUE]
+    current_turn: CurrentTurnState
     victory_state: GameEndStatus

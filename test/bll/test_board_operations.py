@@ -3,6 +3,7 @@ from app.bll.types import GameEndStatus, Card
 from app.bll.board import Board, AgentPlacements
 from app.bll.defaults import DEFAULT_BOARD_SIZE
 from app.bll.types import AgentType, Coordinate
+from test.utils import get_test_board
 
 
 def test_agent_placements_shadow_board():
@@ -307,18 +308,7 @@ def test_board_reveal_card_out_of_bounds():
 
 
 def test_board_reveal_card_already_revealed():
-    words = [
-        [
-            Card(word="word1", card_type=AgentType.UNKNOWN),
-            Card(word="word2", card_type=AgentType.UNKNOWN),
-        ],
-        [
-            Card(word="word3", card_type=AgentType.UNKNOWN),
-            Card(word="word4", card_type=AgentType.UNKNOWN),
-        ],
-    ]
-    agent_placements = AgentPlacements.random(random_seed=42)
-    board = Board(words=words, agent_placements=agent_placements)
+    board = get_test_board()
 
     coord = Coordinate.from_tuple(0, 0)
 

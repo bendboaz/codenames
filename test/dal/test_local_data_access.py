@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 from app.dal.local_dal import LocalDataAccess
 from app.bll.game import Game
-from app.bll.types import Card, AgentType, Coordinate, GameStatus, GameEndStatus
+from app.bll.types import Card, AgentType, Coordinate, GameEndStatus
 from app.bll.board import Board, AgentPlacements
 
 
@@ -96,7 +96,6 @@ def test_save_game_valid(temp_dir):
     game_state = Game(
         game_id="1",  # Matches the `game_id` field in the `Game` class
         board=mock_board,
-        status=GameStatus.INITIALIZED,
         game_end_status=GameEndStatus.ONGOING,
         current_turn={"player": AgentType.RED, "clue": None, "guesses_made": 0},
     )
