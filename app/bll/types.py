@@ -1,6 +1,6 @@
 from enum import Enum
 
-from typing import NamedTuple
+from typing import NamedTuple, Literal
 
 
 class Coordinate(NamedTuple):
@@ -37,3 +37,9 @@ class GameEndStatus(Enum):
 class Card(NamedTuple):
     word: str
     card_type: AgentType
+
+
+class GameState(NamedTuple):
+    words: list[list[Card]]
+    current_player: Literal[AgentType.RED] | Literal[AgentType.BLUE]
+    victory_state: GameEndStatus
