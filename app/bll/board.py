@@ -1,10 +1,9 @@
 import itertools
 import random
 from copy import deepcopy
-from dataclasses import Field
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.bll.defaults import DEFAULT_BOARD_SIZE
 from app.bll.game_utils import get_empty_board
@@ -14,22 +13,23 @@ from app.bll.types import AgentType, Coordinate
 class AgentPlacements(BaseModel):
     positions: dict[AgentType, list[Coordinate]]
     starting_color: AgentType
-    _shadow_board: list[list[AgentType]] = Field(
-        default_factory=lambda: AgentPlacements.build_shadow_board_static(),
+    shadow_board: list[list[AgentType]] = Field(
+        default_factory=lambda: get_empty_board(empty_value=AgentType.INNOCENT)
     )
 
-    @staticmethod
-    def build_shadow_board_static(
-        positions: dict[AgentType, list[Coordinate]] = {},
-    ) -> list[list[AgentType]]:
-        shadow_board = get_empty_board(empty_value=AgentType.INNOCENT)
-        for agent, coordinates in positions.items():
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.build_shadow_board_static()
+
+    def build_shadow_board_static(self) -> list[list[AgentType]]:
+        for agent, coordinates in self.positions.items():
             for coord in coordinates:
-                shadow_board[coord.x][coord.y] = agent
-        return shadow_board
+                self.shadow_board[coord.x][coord.y] = agent
+        return self.shadow_board
 
     def __getitem__(self, item: Coordinate) -> AgentType:
-        return self._shadow_board[item.x][item.y]
+        return self.shadow_board[item.x][item.y]
 
     @classmethod
     def random(cls, random_seed: Optional[int] = None):

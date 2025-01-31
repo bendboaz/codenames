@@ -1,22 +1,46 @@
 import pytest
 from app.bll.board import Board, AgentPlacements
+from app.bll.defaults import DEFAULT_BOARD_SIZE
 from app.bll.types import AgentType, Coordinate
 
 
-def test_agent_placements_shadow_board_static():
+def test_agent_placements_shadow_board():
     positions = {
         AgentType.RED: [Coordinate(0, 0), Coordinate(1, 1)],
         AgentType.BLUE: [Coordinate(2, 2)],
     }
 
-    shadow_board = AgentPlacements.build_shadow_board_static(positions)
+    agent_placements = AgentPlacements(
+        positions=positions, starting_color=AgentType.RED
+    )
+
+    # Validate shadow board is correctly built
+    assert agent_placements.shadow_board[0][0] == AgentType.RED
+    assert agent_placements.shadow_board[1][1] == AgentType.RED
+    assert agent_placements.shadow_board[2][2] == AgentType.BLUE
+
+    # Check that non-specified coordinates default to INNOCENT
+    assert agent_placements.shadow_board[3][3] == AgentType.INNOCENT
+
+
+def test_agent_placements_build_shadow_board_static():
+    positions = {
+        AgentType.RED: [Coordinate(0, 0), Coordinate(1, 1)],
+        AgentType.BLUE: [Coordinate(2, 2)],
+    }
+
+    agent_placements = AgentPlacements(
+        positions=positions, starting_color=AgentType.RED
+    )
+
+    shadow_board = agent_placements.build_shadow_board_static()
 
     # Validate positions are correctly placed in the shadow board
     assert shadow_board[0][0] == AgentType.RED
     assert shadow_board[1][1] == AgentType.RED
     assert shadow_board[2][2] == AgentType.BLUE
 
-    # Check that non-specified coordinates default to INNOCENT
+    # Check that unoccupied spaces remain INNOCENT
     assert shadow_board[3][3] == AgentType.INNOCENT
 
 
@@ -27,9 +51,9 @@ def test_agent_placements_random():
     # Validate the starting color is one of the valid options
     assert agent_placements.starting_color in [AgentType.RED, AgentType.BLUE]
 
-    # Total number of agents should match board size
+    # Validate the total number of agents
     total_agents = sum(len(coords) for coords in agent_placements.positions.values())
-    assert total_agents == 25  # Assuming DEFAULT_BOARD_SIZE == 5
+    assert total_agents == DEFAULT_BOARD_SIZE**2
 
 
 def test_agent_placements_getitem():
@@ -41,11 +65,11 @@ def test_agent_placements_getitem():
         positions=positions, starting_color=AgentType.RED
     )
 
-    # Validate that __getitem__ works as expected
+    # Validate that __getitem__ fetches the correct agent
     assert agent_placements[Coordinate(0, 0)] == AgentType.RED
     assert agent_placements[Coordinate(1, 1)] == AgentType.BLUE
 
-    # Check default value for unoccupied coordinates
+    # Check fallback to INNOCENT
     assert agent_placements[Coordinate(2, 2)] == AgentType.INNOCENT
 
 
