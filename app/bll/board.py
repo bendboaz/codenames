@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 from app.bll.defaults import DEFAULT_BOARD_SIZE
 from app.bll.game_utils import get_empty_board
-from app.bll.types import AgentType, Coordinate
+from app.bll.types import AgentType, Coordinate, GameEndStatus
 
 
 class AgentPlacements(BaseModel):
@@ -70,9 +70,54 @@ class Board:
     ):
         super().__init__()
 
-        if any(len(row) != len(words) for row in words):
+        if len(words) == 0 or any(len(row) != len(words) for row in words):
             raise ValueError("The words array must be a square array.")
 
         self.words = deepcopy(words)
         self.discovered_agents = discovered_agents[:]
         self.agent_placements = agent_placements.model_copy()
+
+    @classmethod
+    def random_with_words(
+        cls, words: list[list[str]], random_seed: Optional[int] = None
+    ):
+        agent_placements = AgentPlacements.random(random_seed=random_seed)
+        return cls(words=words, agent_placements=agent_placements)
+
+    def reveal_card(self, coordinate: Coordinate) -> AgentType:
+        agent_type = self.agent_placements[coordinate]
+        self.discovered_agents.append(coordinate)
+        return agent_type
+
+    def check_game_end(self) -> GameEndStatus:
+        """
+        Check if the game has ended and return the result as a GameEndStatus.
+        Possible outcomes are: RED_VICTORY, BLUE_VICTORY, BLACK_REVEALED, or ONGOING if the game is still ongoing.
+        """
+        red_agents_remaining = len(
+            [
+                coord
+                for coord in self.agent_placements.positions[AgentType.RED]
+                if coord not in self.discovered_agents
+            ]
+        )
+        blue_agents_remaining = len(
+            [
+                coord
+                for coord in self.agent_placements.positions[AgentType.BLUE]
+                if coord not in self.discovered_agents
+            ]
+        )
+
+        # Check if all RED or all BLUE agents have been revealed
+        if red_agents_remaining == 0:
+            return GameEndStatus.RED_VICTORY
+        if blue_agents_remaining == 0:
+            return GameEndStatus.BLUE_VICTORY
+
+        # Check if the black card has been revealed
+        for coord in self.discovered_agents:
+            if self.agent_placements[coord] == AgentType.BLACK:
+                return GameEndStatus.BLACK_REVEALED
+
+        return GameEndStatus.ONGOING
