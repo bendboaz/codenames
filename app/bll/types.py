@@ -47,6 +47,7 @@ class Card(BaseModel):
 
 
 class GameState(BaseModel):
+    game_id: str
     words: list[list[Card]]
     current_player: Literal[AgentType.RED] | Literal[AgentType.BLUE]
     victory_state: GameEndStatus

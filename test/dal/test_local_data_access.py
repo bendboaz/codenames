@@ -68,7 +68,7 @@ def test_get_game_by_id_file_not_found(temp_dir):
 def test_get_game_by_id_valid(temp_dir):
     """Test get_game_by_id when the game file exists."""
     game_id = 1
-    game_data = '{"id": "1", "status": "ONGOING"}'
+    game_data = '{"game_id": "1", "status": "ONGOING", "current_turn": {"player": "RED", "clue": null, "guesses_made": 0}}'
     temp_dir_games = temp_dir / "games"
     temp_dir_games.mkdir()
     game_file = temp_dir_games / f"{game_id}.json"
@@ -92,13 +92,13 @@ def test_save_game_valid(temp_dir):
     game_id = 1
     mock_board = create_mock_board()
 
-    # Use actual field names and default/mock implementations for required fields
+    # Updated to match the new Game signature
     game_state = Game(
-        game_id="1",  # Matches the `id` field in the `Game` class
+        game_id="1",  # Matches the `game_id` field in the `Game` class
         board=mock_board,
         status=GameStatus.INITIALIZED,
         game_end_status=GameEndStatus.ONGOING,
-        current_player=AgentType.RED,
+        current_turn={"player": AgentType.RED, "clue": None, "guesses_made": 0},
     )
 
     # Mock the `model_dump_json` method of the `Game` object (used in `save_game`)

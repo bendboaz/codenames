@@ -1,14 +1,26 @@
 import uuid
-from typing import Literal, TYPE_CHECKING
+from typing import Literal, TYPE_CHECKING, Optional
 
 from pydantic import BaseModel
 
 from app.bll.board import Board
 from app.bll.defaults import DEFAULT_BOARD_SIZE
-from app.bll.types import GameStatus, GameEndStatus, AgentType, GameState
+from app.bll.types import GameStatus, GameEndStatus, AgentType, GameState, Clue
 
 if TYPE_CHECKING:
     from app.dal.base_data_access import BaseDataAccess
+
+
+class InvalidGuessException(Exception):
+    """Exception raised for invalid guesses during the game."""
+
+    pass
+
+
+class CurrentTurnState(BaseModel):
+    player: Literal[AgentType.RED] | Literal[AgentType.BLUE]
+    clue: Optional[Clue] = None
+    guesses_made: int = 0
 
 
 class Game(BaseModel):
@@ -16,12 +28,9 @@ class Game(BaseModel):
     board: Board
     status: GameStatus
     game_end_status: GameEndStatus
-    current_player: Literal[AgentType.RED] | Literal[AgentType.BLUE]
+    current_turn: CurrentTurnState
 
     def __init__(self, **kwargs):
-        if "current_player" in kwargs and kwargs.get("current_player") is None:
-            kwargs["current_player"] = kwargs["board"].agent_placements.starting_color
-
         super().__init__(**kwargs)
 
     @classmethod
