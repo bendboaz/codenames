@@ -175,12 +175,17 @@ def test_board_random_with_words():
 
 
 def test_board_reveal_card():
+    from app.bll.types import Card, AgentType
+
     words = [
-        ["word1", "word2", "word3", "word4", "word5"],
-        ["word6", "word7", "word8", "word9", "word10"],
-        ["word11", "word12", "word13", "word14", "word15"],
-        ["word16", "word17", "word18", "word19", "word20"],
-        ["word21", "word22", "word23", "word24", "word25"],
+        [
+            Card(word="word1", card_type=AgentType.UNKNOWN),
+            Card(word="word2", card_type=AgentType.UNKNOWN),
+        ],
+        [
+            Card(word="word3", card_type=AgentType.UNKNOWN),
+            Card(word="word4", card_type=AgentType.UNKNOWN),
+        ],
     ]
     agent_placements = AgentPlacements.random(random_seed=42)
     board = Board(words=words, agent_placements=agent_placements)
@@ -188,9 +193,15 @@ def test_board_reveal_card():
     coord = Coordinate(0, 0)
     agent_type = board.reveal_card(coord)
 
-    # Validate revealed card and discovered agents list
+    # Validate discovered agents list
     assert coord in board.discovered_agents
+
+    # Validate agent type from placements
     assert agent_type == board.agent_placements[coord]
+
+    # Validate the card's type is updated
+    updated_card = board.words[coord.x][coord.y]
+    assert updated_card.card_type == agent_type
 
 
 def test_check_game_end_ongoing():
@@ -211,6 +222,8 @@ def test_check_game_end_ongoing():
 
 
 def test_check_game_end_victory():
+    from app.bll.types import Card, AgentType
+
     words = [
         ["word1", "word2", "word3", "word4", "word5"],
         ["word6", "word7", "word8", "word9", "word10"],
@@ -218,6 +231,11 @@ def test_check_game_end_victory():
         ["word16", "word17", "word18", "word19", "word20"],
         ["word21", "word22", "word23", "word24", "word25"],
     ]
+
+    words = [
+        [Card(word=word, card_type=AgentType.UNKNOWN) for word in row] for row in words
+    ]
+
     positions = {
         AgentType.RED: [Coordinate(0, 0)],
         AgentType.BLUE: [Coordinate(1, 1)],
@@ -239,12 +257,18 @@ def test_check_game_end_victory():
 
 
 def test_check_game_end_black_card():
+    from app.bll.types import Card, AgentType
+
     words = [
         ["word1", "word2", "word3", "word4", "word5"],
         ["word6", "word7", "word8", "word9", "word10"],
         ["word11", "word12", "word13", "word14", "word15"],
         ["word16", "word17", "word18", "word19", "word20"],
         ["word21", "word22", "word23", "word24", "word25"],
+    ]
+
+    words = [
+        [Card(word=word, card_type=AgentType.UNKNOWN) for word in row] for row in words
     ]
     positions = {
         AgentType.RED: [Coordinate(0, 0)],

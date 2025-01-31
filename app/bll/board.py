@@ -100,6 +100,9 @@ class Board:
 
     def reveal_card(self, coordinate: Coordinate) -> AgentType:
         agent_type = self.agent_placements[coordinate]
+        self.words[coordinate.x][coordinate.y] = self.words[coordinate.x][
+            coordinate.y
+        ]._replace(card_type=agent_type)
         self.discovered_agents.append(coordinate)
         return agent_type
 
