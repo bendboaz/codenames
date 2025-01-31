@@ -1,8 +1,12 @@
+import itertools
+import random
 from copy import deepcopy
 from dataclasses import Field
+from typing import Optional
 
 from pydantic import BaseModel
 
+from app.bll.defaults import DEFAULT_BOARD_SIZE
 from app.bll.game_utils import get_empty_board
 from app.bll.types import AgentType, Coordinate
 
@@ -11,7 +15,7 @@ class AgentPlacements(BaseModel):
     positions: dict[AgentType, list[Coordinate]]
     starting_color: AgentType
     _shadow_board: list[list[AgentType]] = Field(
-        default_factory=lambda: AgentPlacements.build_shadow_board_static()
+        default_factory=lambda: AgentPlacements.build_shadow_board_static(),
     )
 
     @staticmethod
@@ -26,6 +30,31 @@ class AgentPlacements(BaseModel):
 
     def __getitem__(self, item: Coordinate) -> AgentType:
         return self._shadow_board[item.x][item.y]
+
+    @classmethod
+    def random(cls, random_seed: Optional[int] = None):
+        if random_seed is not None:
+            random.seed(random_seed)
+
+        board_size = DEFAULT_BOARD_SIZE
+        starting_color = random.choice([AgentType.BLUE, AgentType.RED])
+        num_agents_per_type = {
+            AgentType.RED: 9 if starting_color == AgentType.RED else 8,
+            AgentType.BLUE: 9 if starting_color == AgentType.BLUE else 8,
+            AgentType.BLACK: 1,
+            AgentType.INNOCENT: (board_size**2) - (8 + 9 + 1),
+        }
+        chosen_positions = {}
+        all_configurations = list(
+            itertools.product(*itertools.repeat(range(board_size), 2))
+        )
+        random.shuffle(all_configurations)
+
+        for agent_type, num_agents in num_agents_per_type.items():
+            chosen_positions[agent_type] = all_configurations[:num_agents]
+            all_configurations = all_configurations[num_agents:]
+
+        return cls(positions=chosen_positions, starting_color=starting_color)
 
 
 class Board:
