@@ -162,8 +162,13 @@ def test_board_random_with_words():
     assert all(len(row) == 5 for row in board.words)
 
     # Verify that all input words are present, but order is shuffled
-    flattened_result = [word for row in board.words for word in row]
+    flattened_result = [card.word for row in board.words for card in row]
     assert sorted(flattened_result) == sorted(words)
+
+    # Verify all card states are set as UNKNOWN
+    for row in board.words:
+        for card in row:
+            assert card.card_type == AgentType.UNKNOWN
 
     # Verify it created the agent placements
     assert isinstance(board.agent_placements, AgentPlacements)

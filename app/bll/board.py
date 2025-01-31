@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 from app.bll.defaults import DEFAULT_BOARD_SIZE
 from app.bll.game_utils import get_empty_board
-from app.bll.types import AgentType, Coordinate, GameEndStatus
+from app.bll.types import AgentType, Coordinate, GameEndStatus, Card
 
 
 class AgentPlacements(BaseModel):
@@ -58,13 +58,13 @@ class AgentPlacements(BaseModel):
 
 
 class Board:
-    cards: list[list[str]]
+    words: list[list[Card]]
     discovered_agents: list[Coordinate]
     agent_placements: AgentPlacements
 
     def __init__(
         self,
-        words: list[list[str]],
+        words: list[list[Card]],
         agent_placements: AgentPlacements,
         discovered_agents: list[Coordinate] = [],
     ):
@@ -88,8 +88,13 @@ class Board:
 
         random.shuffle(words)
         formatted_words = [
-            words[i : i + board_size] for i in range(0, len(words), board_size)
+            [
+                Card(word=word, card_type=AgentType.UNKNOWN)
+                for word in words[i : i + board_size]
+            ]
+            for i in range(0, len(words), board_size)
         ]
+
         agent_placements = AgentPlacements.random(random_seed=random_seed)
         return cls(words=formatted_words, agent_placements=agent_placements)
 

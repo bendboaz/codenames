@@ -1,4 +1,4 @@
-from enum import Enum, auto
+from enum import Enum
 
 from typing import NamedTuple
 
@@ -14,10 +14,11 @@ class Clue(NamedTuple):
 
 
 class AgentType(Enum):
-    RED = auto()
-    BLUE = auto()
-    BLACK = auto()
-    INNOCENT = auto()
+    RED = "RED"
+    BLUE = "BLUE"
+    BLACK = "BLACK"
+    INNOCENT = "INNOCENT"
+    UNKNOWN = "UNKNOWN"
 
 
 class GameStatus(Enum):
@@ -31,3 +32,8 @@ class GameEndStatus(Enum):
     BLUE_VICTORY = "BLUE_VICTORY"
     BLACK_REVEALED = "BLACK_REVEALED"
     ONGOING = "ONGOING"
+
+
+class Card(NamedTuple):
+    word: str
+    card_type: AgentType
