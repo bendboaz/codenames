@@ -1,0 +1,100 @@
+import pytest
+from app.bll.board import Board, AgentPlacements
+from app.bll.types import AgentType, Coordinate
+
+
+def test_agent_placements_shadow_board_static():
+    positions = {
+        AgentType.RED: [Coordinate(0, 0), Coordinate(1, 1)],
+        AgentType.BLUE: [Coordinate(2, 2)],
+    }
+
+    shadow_board = AgentPlacements.build_shadow_board_static(positions)
+
+    # Validate positions are correctly placed in the shadow board
+    assert shadow_board[0][0] == AgentType.RED
+    assert shadow_board[1][1] == AgentType.RED
+    assert shadow_board[2][2] == AgentType.BLUE
+
+    # Check that non-specified coordinates default to INNOCENT
+    assert shadow_board[3][3] == AgentType.INNOCENT
+
+
+def test_agent_placements_random():
+    random_seed = 42  # Use a fixed seed for deterministic behavior
+    agent_placements = AgentPlacements.random(random_seed=random_seed)
+
+    # Validate the starting color is one of the valid options
+    assert agent_placements.starting_color in [AgentType.RED, AgentType.BLUE]
+
+    # Total number of agents should match board size
+    total_agents = sum(len(coords) for coords in agent_placements.positions.values())
+    assert total_agents == 25  # Assuming DEFAULT_BOARD_SIZE == 5
+
+
+def test_agent_placements_getitem():
+    positions = {
+        AgentType.RED: [Coordinate(0, 0)],
+        AgentType.BLUE: [Coordinate(1, 1)],
+    }
+    agent_placements = AgentPlacements(
+        positions=positions, starting_color=AgentType.RED
+    )
+
+    # Validate that __getitem__ works as expected
+    assert agent_placements[Coordinate(0, 0)] == AgentType.RED
+    assert agent_placements[Coordinate(1, 1)] == AgentType.BLUE
+
+    # Check default value for unoccupied coordinates
+    assert agent_placements[Coordinate(2, 2)] == AgentType.INNOCENT
+
+
+def test_board_initialization_valid():
+    words = [
+        ["word1", "word2", "word3", "word4", "word5"],
+        ["word6", "word7", "word8", "word9", "word10"],
+        ["word11", "word12", "word13", "word14", "word15"],
+        ["word16", "word17", "word18", "word19", "word20"],
+        ["word21", "word22", "word23", "word24", "word25"],
+    ]
+    agent_placements = AgentPlacements.random(random_seed=42)
+
+    board = Board(words=words, agent_placements=agent_placements)
+
+    # Validate board dimensions and structure
+    assert board.words == words
+    assert len(board.words) == 5
+    assert len(board.words[0]) == 5
+
+
+def test_board_initialization_invalid():
+    words = [
+        ["word1", "word2", "word3"],
+        ["word4", "word5"],  # Non-uniform row length
+    ]
+    agent_placements = AgentPlacements.random(random_seed=42)
+
+    with pytest.raises(ValueError, match="The words array must be a square array."):
+        Board(words=words, agent_placements=agent_placements)
+
+
+def test_board_discovered_agents():
+    words = [
+        ["word1", "word2", "word3", "word4", "word5"],
+        ["word6", "word7", "word8", "word9", "word10"],
+        ["word11", "word12", "word13", "word14", "word15"],
+        ["word16", "word17", "word18", "word19", "word20"],
+        ["word21", "word22", "word23", "word24", "word25"],
+    ]
+    agent_placements = AgentPlacements.random(random_seed=42)
+    discovered_agents = [Coordinate(1, 1), Coordinate(2, 2)]
+
+    board = Board(
+        words=words,
+        agent_placements=agent_placements,
+        discovered_agents=discovered_agents,
+    )
+
+    # Validate discovered agents are set correctly
+    assert board.discovered_agents == discovered_agents
+    assert len(board.discovered_agents) == 2
