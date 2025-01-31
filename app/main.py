@@ -10,5 +10,6 @@ app = FastAPI()
 def read_root():
     return {"message": "Welcome to the FastAPI App!"}
 
+
 # Mount the router to the FastAPI app
 app.include_router(game_router)

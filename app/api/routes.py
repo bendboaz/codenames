@@ -1,10 +1,9 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException
 from typing import Dict, Any
 
 from app.api.schemas import GameState
 
 game_router = APIRouter(prefix="/game", tags=["game"])
-
 
 
 # Dictionary to hold mock game data for demonstration
