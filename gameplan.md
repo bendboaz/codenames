@@ -1,8 +1,9 @@
-- Finish implementing the game backend
-- Implement basic console-based game manager (for 3-4 players all on the same computer)
-- Implement basic web-based game manager
-- Implement multi-client game manager
-- Implement AI based spymaster
-  - play around
-- Implement AI based operative
-- Let them have at each other?
+- [ ] Finish implementing the game backend
+    - [ ] Add game metadata
+- [ ] Implement basic console-based game manager (for 3-4 players all on the same computer)
+- [ ] Implement basic web-based game manager
+- [ ] Implement multi-client game manager
+- [ ] Implement AI based spymaster
+    - [ ] play around
+- [ ] Implement AI based operative
+- [ ] Let them have at each other?
