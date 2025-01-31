@@ -45,19 +45,20 @@ class AgentPlacements(BaseModel):
             AgentType.INNOCENT: (board_size**2) - (8 + 9 + 1),
         }
         chosen_positions = {}
-        all_configurations = list(
+        all_coordinates = list(
             itertools.product(*itertools.repeat(range(board_size), 2))
         )
-        random.shuffle(all_configurations)
+        all_coordinates = [Coordinate.from_tuple(*coor) for coor in all_coordinates]
+        random.shuffle(all_coordinates)
 
         for agent_type, num_agents in num_agents_per_type.items():
-            chosen_positions[agent_type] = all_configurations[:num_agents]
-            all_configurations = all_configurations[num_agents:]
+            chosen_positions[agent_type] = all_coordinates[:num_agents]
+            all_coordinates = all_coordinates[num_agents:]
 
         return cls(positions=chosen_positions, starting_color=starting_color)
 
 
-class Board:
+class Board(BaseModel):
     words: list[list[Card]]
     discovered_agents: list[Coordinate]
     agent_placements: AgentPlacements
@@ -68,14 +69,24 @@ class Board:
         agent_placements: AgentPlacements,
         discovered_agents: list[Coordinate] = [],
     ):
-        super().__init__()
-
         if len(words) == 0 or any(len(row) != len(words) for row in words):
             raise ValueError("The words array must be a square array.")
 
-        self.words = deepcopy(words)
-        self.discovered_agents = discovered_agents[:]
-        self.agent_placements = agent_placements.model_copy()
+        super().__init__(
+            words=deepcopy(words),
+            agent_placements=agent_placements.model_copy(),
+            discovered_agents=discovered_agents[:],
+        )
+
+    @classmethod
+    def from_words_and_placements(
+        cls, words: list[list[str]], placements: AgentPlacements
+    ):
+        words = [
+            [Card(word=word, card_type=AgentType.UNKNOWN) for word in row]
+            for row in words
+        ]
+        return cls(words, placements)
 
     @classmethod
     def random_with_words(cls, words: list[str], random_seed: Optional[int] = None):
@@ -100,9 +111,7 @@ class Board:
 
     def reveal_card(self, coordinate: Coordinate) -> AgentType:
         agent_type = self.agent_placements[coordinate]
-        self.words[coordinate.x][coordinate.y] = self.words[coordinate.x][
-            coordinate.y
-        ]._replace(card_type=agent_type)
+        self.words[coordinate.x][coordinate.y].card_type = agent_type
         self.discovered_agents.append(coordinate)
         return agent_type
 

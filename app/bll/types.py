@@ -1,14 +1,21 @@
 from enum import Enum
 
-from typing import NamedTuple, Literal
+from typing import Literal
+
+from pydantic import BaseModel
 
 
-class Coordinate(NamedTuple):
+class Coordinate(BaseModel):
     x: int
     y: int
 
+    @classmethod
+    def from_tuple(cls, *tup: [int, int]):
+        x, y = tup
+        return cls(x=x, y=y)
 
-class Clue(NamedTuple):
+
+class Clue(BaseModel):
     clue: str
     num_guesses: int
 
@@ -34,12 +41,12 @@ class GameEndStatus(Enum):
     ONGOING = "ONGOING"
 
 
-class Card(NamedTuple):
+class Card(BaseModel):
     word: str
     card_type: AgentType
 
 
-class GameState(NamedTuple):
+class GameState(BaseModel):
     words: list[list[Card]]
     current_player: Literal[AgentType.RED] | Literal[AgentType.BLUE]
     victory_state: GameEndStatus

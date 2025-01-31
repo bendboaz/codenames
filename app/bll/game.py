@@ -2,13 +2,15 @@ import uuid
 from pathlib import Path
 from typing import Literal
 
+from pydantic import BaseModel
+
 from app.bll.board import Board
 from app.bll.defaults import DEFAULT_BOARD_SIZE
 from app.bll.types import GameStatus, GameEndStatus, AgentType, GameState
 from app.dal.local_dal import LocalDataAccess
 
 
-class Game:
+class Game(BaseModel):
     id: str
     board: Board
     status: GameStatus

@@ -1,5 +1,5 @@
 import pytest
-from app.bll.types import GameEndStatus
+from app.bll.types import GameEndStatus, Card
 from app.bll.board import Board, AgentPlacements
 from app.bll.defaults import DEFAULT_BOARD_SIZE
 from app.bll.types import AgentType, Coordinate
@@ -7,8 +7,8 @@ from app.bll.types import AgentType, Coordinate
 
 def test_agent_placements_shadow_board():
     positions = {
-        AgentType.RED: [Coordinate(0, 0), Coordinate(1, 1)],
-        AgentType.BLUE: [Coordinate(2, 2)],
+        AgentType.RED: [Coordinate.from_tuple(0, 0), Coordinate.from_tuple(1, 1)],
+        AgentType.BLUE: [Coordinate.from_tuple(2, 2)],
     }
 
     agent_placements = AgentPlacements(
@@ -26,8 +26,8 @@ def test_agent_placements_shadow_board():
 
 def test_agent_placements_build_shadow_board_static():
     positions = {
-        AgentType.RED: [Coordinate(0, 0), Coordinate(1, 1)],
-        AgentType.BLUE: [Coordinate(2, 2)],
+        AgentType.RED: [Coordinate.from_tuple(0, 0), Coordinate.from_tuple(1, 1)],
+        AgentType.BLUE: [Coordinate.from_tuple(2, 2)],
     }
 
     agent_placements = AgentPlacements(
@@ -59,19 +59,19 @@ def test_agent_placements_random():
 
 def test_agent_placements_getitem():
     positions = {
-        AgentType.RED: [Coordinate(0, 0)],
-        AgentType.BLUE: [Coordinate(1, 1)],
+        AgentType.RED: [Coordinate.from_tuple(0, 0)],
+        AgentType.BLUE: [Coordinate.from_tuple(1, 1)],
     }
     agent_placements = AgentPlacements(
         positions=positions, starting_color=AgentType.RED
     )
 
     # Validate that __getitem__ fetches the correct agent
-    assert agent_placements[Coordinate(0, 0)] == AgentType.RED
-    assert agent_placements[Coordinate(1, 1)] == AgentType.BLUE
+    assert agent_placements[Coordinate.from_tuple(0, 0)] == AgentType.RED
+    assert agent_placements[Coordinate.from_tuple(1, 1)] == AgentType.BLUE
 
     # Check fallback to INNOCENT
-    assert agent_placements[Coordinate(2, 2)] == AgentType.INNOCENT
+    assert agent_placements[Coordinate.from_tuple(2, 2)] == AgentType.INNOCENT
 
 
 def test_board_initialization_valid():
@@ -84,10 +84,10 @@ def test_board_initialization_valid():
     ]
     agent_placements = AgentPlacements.random(random_seed=42)
 
-    board = Board(words=words, agent_placements=agent_placements)
+    board = Board.from_words_and_placements(words=words, placements=agent_placements)
 
     # Validate board dimensions and structure
-    assert board.words == words
+    assert [[word.word for word in row] for row in board.words] == words
     assert len(board.words) == 5
     assert len(board.words[0]) == 5
 
@@ -100,7 +100,7 @@ def test_board_initialization_invalid():
     agent_placements = AgentPlacements.random(random_seed=42)
 
     with pytest.raises(ValueError, match="The words array must be a square array."):
-        Board(words=words, agent_placements=agent_placements)
+        Board.from_words_and_placements(words=words, placements=agent_placements)
 
 
 def test_board_discovered_agents():
@@ -111,8 +111,11 @@ def test_board_discovered_agents():
         ["word16", "word17", "word18", "word19", "word20"],
         ["word21", "word22", "word23", "word24", "word25"],
     ]
+    words = [
+        [Card(word=word, card_type=AgentType.UNKNOWN) for word in row] for row in words
+    ]
     agent_placements = AgentPlacements.random(random_seed=42)
-    discovered_agents = [Coordinate(1, 1), Coordinate(2, 2)]
+    discovered_agents = [Coordinate.from_tuple(1, 1), Coordinate.from_tuple(2, 2)]
 
     board = Board(
         words=words,
@@ -190,7 +193,7 @@ def test_board_reveal_card():
     agent_placements = AgentPlacements.random(random_seed=42)
     board = Board(words=words, agent_placements=agent_placements)
 
-    coord = Coordinate(0, 0)
+    coord = Coordinate.from_tuple(0, 0)
     agent_type = board.reveal_card(coord)
 
     # Validate discovered agents list
@@ -213,7 +216,7 @@ def test_check_game_end_ongoing():
         ["word21", "word22", "word23", "word24", "word25"],
     ]
     agent_placements = AgentPlacements.random(random_seed=42)
-    board = Board(words=words, agent_placements=agent_placements)
+    board = Board.from_words_and_placements(words=words, placements=agent_placements)
 
     game_status = board.check_game_end()
 
@@ -222,7 +225,7 @@ def test_check_game_end_ongoing():
 
 
 def test_check_game_end_victory():
-    from app.bll.types import Card, AgentType
+    from app.bll.types import AgentType
 
     words = [
         ["word1", "word2", "word3", "word4", "word5"],
@@ -232,23 +235,19 @@ def test_check_game_end_victory():
         ["word21", "word22", "word23", "word24", "word25"],
     ]
 
-    words = [
-        [Card(word=word, card_type=AgentType.UNKNOWN) for word in row] for row in words
-    ]
-
     positions = {
-        AgentType.RED: [Coordinate(0, 0)],
-        AgentType.BLUE: [Coordinate(1, 1)],
-        AgentType.BLACK: [Coordinate(4, 4)],
+        AgentType.RED: [Coordinate.from_tuple(0, 0)],
+        AgentType.BLUE: [Coordinate.from_tuple(1, 1)],
+        AgentType.BLACK: [Coordinate.from_tuple(4, 4)],
         AgentType.INNOCENT: [],
     }
     agent_placements = AgentPlacements(
         positions=positions, starting_color=AgentType.RED
     )
-    board = Board(words=words, agent_placements=agent_placements)
+    board = Board.from_words_and_placements(words=words, placements=agent_placements)
 
     # Reveal all RED agents
-    board.reveal_card(Coordinate(0, 0))
+    board.reveal_card(Coordinate.from_tuple(0, 0))
 
     game_status = board.check_game_end()
 
@@ -257,7 +256,7 @@ def test_check_game_end_victory():
 
 
 def test_check_game_end_black_card():
-    from app.bll.types import Card, AgentType
+    from app.bll.types import AgentType
 
     words = [
         ["word1", "word2", "word3", "word4", "word5"],
@@ -267,22 +266,19 @@ def test_check_game_end_black_card():
         ["word21", "word22", "word23", "word24", "word25"],
     ]
 
-    words = [
-        [Card(word=word, card_type=AgentType.UNKNOWN) for word in row] for row in words
-    ]
     positions = {
-        AgentType.RED: [Coordinate(0, 0)],
-        AgentType.BLUE: [Coordinate(1, 1)],
-        AgentType.BLACK: [Coordinate(4, 4)],
+        AgentType.RED: [Coordinate.from_tuple(0, 0)],
+        AgentType.BLUE: [Coordinate.from_tuple(1, 1)],
+        AgentType.BLACK: [Coordinate.from_tuple(4, 4)],
         AgentType.INNOCENT: [],
     }
     agent_placements = AgentPlacements(
         positions=positions, starting_color=AgentType.RED
     )
-    board = Board(words=words, agent_placements=agent_placements)
+    board = Board.from_words_and_placements(words=words, placements=agent_placements)
 
     # Reveal the BLACK agent
-    board.reveal_card(Coordinate(4, 4))
+    board.reveal_card(Coordinate.from_tuple(4, 4))
 
     game_status = board.check_game_end()
 
