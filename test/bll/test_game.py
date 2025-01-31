@@ -1,5 +1,9 @@
+import uuid
+
 import pytest
-from unittest.mock import create_autospec, patch
+from unittest.mock import create_autospec, patch, MagicMock
+
+from app.bll.defaults import DEFAULT_BOARD_SIZE
 from app.bll.game import Game, InvalidGuessException, CurrentTurnState
 from app.bll.board import Board
 from app.bll.types import AgentType, Coordinate, Clue, GameEndStatus
@@ -168,3 +172,34 @@ def test_make_move_invalid_guess():
     guess = Coordinate(x=1, y=1)
     with pytest.raises(InvalidGuessException, match="Invalid guess!"):
         game.make_move(guess)
+
+
+def test_game_new_game():
+    # Mock a words provider
+    words_provider = MagicMock()
+    words_provider.load_card_words.return_value = [
+        f"word{i}" for i in range(DEFAULT_BOARD_SIZE**2)
+    ]
+
+    # Call Game.new_game
+    game = Game.new_game(words_provider)
+
+    # Assertions
+    assert isinstance(game, Game)  # Ensure a Game instance is returned
+    assert isinstance(game.board, Board)  # Ensure the board is a Board instance
+    assert len(game.board.words) == DEFAULT_BOARD_SIZE  # Ensure the board size matches
+    assert all(
+        len(row) == DEFAULT_BOARD_SIZE for row in game.board.words
+    )  # Ensure the board is square
+
+    # Validate the game_id is a UUID string
+    uuid_obj = uuid.UUID(
+        game.game_id, version=4
+    )  # This will raise ValueError if not a valid UUID
+    assert str(uuid_obj) == game.game_id
+
+    # Ensure the game is in the ONGOING state
+    assert game.game_end_status == GameEndStatus.ONGOING
+
+    # Check that words_provider was used correctly
+    words_provider.load_card_words.assert_called()  # Ensure it was called at least once

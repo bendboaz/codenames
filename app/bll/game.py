@@ -34,12 +34,13 @@ class Game(BaseModel):
     @classmethod
     def new_game(cls, words_provider: "BaseDataAccess"):
         board = Board.random_with_words(
-            words_provider.load_card_words()[:DEFAULT_BOARD_SIZE]
+            words_provider.load_card_words()[: DEFAULT_BOARD_SIZE**2]
         )
         return cls(
             game_id=str(uuid.uuid4()),
             board=board,
             game_end_status=GameEndStatus.ONGOING,
+            current_turn=CurrentTurnState(player=board.agent_placements.starting_color),
         )
 
     def get_game_description_for_operative(self) -> GameState:
