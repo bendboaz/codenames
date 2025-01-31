@@ -127,18 +127,45 @@ def test_board_discovered_agents():
 
 def test_board_random_with_words():
     words = [
-        ["word1", "word2", "word3", "word4", "word5"],
-        ["word6", "word7", "word8", "word9", "word10"],
-        ["word11", "word12", "word13", "word14", "word15"],
-        ["word16", "word17", "word18", "word19", "word20"],
-        ["word21", "word22", "word23", "word24", "word25"],
+        "word1",
+        "word2",
+        "word3",
+        "word4",
+        "word5",
+        "word6",
+        "word7",
+        "word8",
+        "word9",
+        "word10",
+        "word11",
+        "word12",
+        "word13",
+        "word14",
+        "word15",
+        "word16",
+        "word17",
+        "word18",
+        "word19",
+        "word20",
+        "word21",
+        "word22",
+        "word23",
+        "word24",
+        "word25",
     ]
+
+    # Create a board using the random_with_words method with a fixed seed
     board = Board.random_with_words(words=words, random_seed=42)
 
-    # Validate board structure and agent placements
-    assert board.words == words
+    # Verify that words are reshaped into a 5x5 grid (DEFAULT_BOARD_SIZE assumed as 5)
     assert len(board.words) == 5
-    assert len(board.words[0]) == 5
+    assert all(len(row) == 5 for row in board.words)
+
+    # Verify that all input words are present, but order is shuffled
+    flattened_result = [word for row in board.words for word in row]
+    assert sorted(flattened_result) == sorted(words)
+
+    # Verify it created the agent placements
     assert isinstance(board.agent_placements, AgentPlacements)
 
 

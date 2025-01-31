@@ -78,11 +78,20 @@ class Board:
         self.agent_placements = agent_placements.model_copy()
 
     @classmethod
-    def random_with_words(
-        cls, words: list[list[str]], random_seed: Optional[int] = None
-    ):
+    def random_with_words(cls, words: list[str], random_seed: Optional[int] = None):
+        if random_seed is not None:
+            random.seed(random_seed)
+
+        board_size = DEFAULT_BOARD_SIZE
+        if len(words) != board_size**2:
+            raise ValueError(f"The number of words must be exactly {board_size**2}.")
+
+        random.shuffle(words)
+        formatted_words = [
+            words[i : i + board_size] for i in range(0, len(words), board_size)
+        ]
         agent_placements = AgentPlacements.random(random_seed=random_seed)
-        return cls(words=words, agent_placements=agent_placements)
+        return cls(words=formatted_words, agent_placements=agent_placements)
 
     def reveal_card(self, coordinate: Coordinate) -> AgentType:
         agent_type = self.agent_placements[coordinate]
