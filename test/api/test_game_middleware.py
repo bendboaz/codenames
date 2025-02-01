@@ -26,21 +26,6 @@ def app_with_dependency(mock_data_access, mock_game):
     """FastAPI app with `get_or_create_game` dependency."""
     app = FastAPI()
 
-    #
-    # # Dependency override for `get_or_create_game`
-    # async def mock_get_or_create_game(game_id: str | None = None):
-    #     if game_id:
-    #         try:
-    #             return mock_data_access.get_game_by_id(game_id)
-    #         except FileNotFoundError:
-    #             raise HTTPException(status_code=404, detail=f"Game with ID {game_id} not found.")
-    #     else:
-    #         # Create new game logic
-    #         mock_game.game_id = "new_game_id"
-    #         return mock_game
-    #
-    # app.dependency_overrides[get_or_create_game] = mock_get_or_create_game
-
     @app.get("/game/query")
     async def get_game_query(
         game: Game = Depends(get_or_create_game), game_id: str = ""
@@ -68,17 +53,45 @@ def app_with_dependency(mock_data_access, mock_game):
     return app
 
 
-@patch(
-    "app.api.dependencies.game_storage.data_access.save_game"
-)  # Patch the `data_access.save_game` method
-@patch(
-    "app.api.dependencies.game_storage.data_access.get_game_by_id"
-)  # Patch the `data_access.get_game_by_id` method
+@pytest.fixture
+def mock_patched_dependencies(mock_game):
+    """Fixture to patch and provide commonly used dependencies.
+
+    This includes:
+    - `data_access.get_game_by_id`
+    - `data_access.save_game`
+    - `Game.new_game`
+    """
+    with (
+        patch(
+            "app.api.dependencies.game_storage.data_access.get_game_by_id"
+        ) as mock_get_game_by_id,
+        patch(
+            "app.api.dependencies.game_storage.data_access.save_game"
+        ) as mock_save_game,
+        patch("app.api.dependencies.game_storage.Game.new_game") as mock_new_game,
+    ):
+        # Mock behaviors
+        mock_get_game_by_id.return_value = mock_game  # Default to returning mock_game
+        mock_save_game.return_value = None  # Default to no return for saving
+        mock_new_game.return_value = (
+            mock_game  # Default to returning mock_game for new_game
+        )
+
+        # Yield the mocks
+        yield {
+            "get_game_by_id": mock_get_game_by_id,
+            "save_game": mock_save_game,
+            "new_game": mock_new_game,
+        }
+
+
 def test_game_loading_with_dependency(
-    mock_get_game_by_id, mock_save_game, mock_game, app_with_dependency
+    mock_patched_dependencies, mock_game, app_with_dependency
 ):
     """Test loading an existing game using the `get_or_create_game` dependency."""
-    mock_get_game_by_id.return_value = mock_game  # Mock game retrieval
+    # Access the patched `get_game_by_id` mock
+    mock_patched_dependencies["get_game_by_id"].return_value = mock_game
 
     client = TestClient(app_with_dependency)
     response = client.get("/game/test_game_id")  # Test path parameter
@@ -86,21 +99,13 @@ def test_game_loading_with_dependency(
     # Assertions
     assert response.status_code == 200
     assert response.json() == {"game_id": "test_game_id"}
-    mock_get_game_by_id.assert_called_once_with("test_game_id")
+    mock_patched_dependencies["get_game_by_id"].assert_called_once_with("test_game_id")
 
 
-@patch(
-    "app.api.dependencies.game_storage.data_access.save_game"
-)  # Patch the `data_access.save_game` method
-@patch(
-    "app.api.dependencies.game_storage.data_access.get_game_by_id"
-)  # Patch the `data_access.get_game_by_id` method
 def test_game_loading_from_query(
-    mock_get_game_by_id, mock_save_game, mock_game, app_with_dependency
+    mock_patched_dependencies, mock_game, app_with_dependency
 ):
     """Test that the dependency successfully retrieves game_id from query parameters."""
-    mock_get_game_by_id.return_value = mock_game  # Mock data retrieval by ID
-
     client = TestClient(app_with_dependency)
     response = client.get(
         "/game/query?game_id=test_game_id"
@@ -109,21 +114,13 @@ def test_game_loading_from_query(
     # Assertions
     assert response.status_code == 200
     assert response.json() == {"game_id": "test_game_id"}
-    mock_get_game_by_id.assert_called_once_with("test_game_id")
+    mock_patched_dependencies["get_game_by_id"].assert_called_once_with("test_game_id")
 
 
-@patch(
-    "app.api.dependencies.game_storage.data_access.save_game"
-)  # Patch the `data_access.save_game` method
-@patch(
-    "app.api.dependencies.game_storage.data_access.get_game_by_id"
-)  # Patch the `data_access.get_game_by_id` method
 def test_game_loading_from_body(
-    mock_get_game_by_id, mock_save_game, mock_game, app_with_dependency
+    mock_patched_dependencies, mock_game, app_with_dependency
 ):
     """Test that the dependency works when extracting game_id from the request body."""
-    mock_get_game_by_id.return_value = mock_game  # Mock data retrieval by ID
-
     client = TestClient(app_with_dependency)
     request_body = {"game_id": "test_game_id"}  # Request body with game_id
     response = client.post("/game/body", json=request_body)  # POST request body test
@@ -131,21 +128,17 @@ def test_game_loading_from_body(
     # Assertions
     assert response.status_code == 200
     assert response.json() == {"game_id": "test_game_id"}
-    mock_get_game_by_id.assert_called_once_with("test_game_id")
+    mock_patched_dependencies["get_game_by_id"].assert_called_once_with("test_game_id")
 
 
-@patch(
-    "app.api.dependencies.game_storage.data_access.save_game"
-)  # Patch the `data_access.save_game` method
-@patch(
-    "app.api.dependencies.game_storage.Game.new_game"
-)  # Patch the `Game.new_game` method
 def test_game_auto_creation_with_dependency(
-    mock_new_game, mock_save_game, mock_game, app_with_dependency
+    mock_patched_dependencies, mock_game, app_with_dependency
 ):
     """Test that `get_or_create_game` creates a new game if no `game_id` is provided."""
-    mock_new_game.return_value = mock_game  # Mock new game creation
-    mock_game.game_id = "new_game_id"  # Assign mock game_id
+    mock_patched_dependencies[
+        "new_game"
+    ].return_value = mock_game  # Ensure new game is mocked
+    mock_game.game_id = "new_game_id"
 
     client = TestClient(app_with_dependency)
     response = client.post("/game/start")  # No game_id provided
@@ -153,21 +146,14 @@ def test_game_auto_creation_with_dependency(
     # Assertions
     assert response.status_code == 200
     assert response.json() == {"game_id": "new_game_id"}
-    mock_new_game.assert_called_once()
-    mock_save_game.assert_called_with("new_game_id", mock_game)
+    mock_patched_dependencies["new_game"].assert_called_once()
+    mock_patched_dependencies["save_game"].assert_called_with("new_game_id", mock_game)
 
 
-@patch(
-    "app.api.dependencies.game_storage.data_access.save_game"
-)  # Patch the `data_access.save_game` method
-@patch(
-    "app.api.dependencies.game_storage.data_access.get_game_by_id"
-)  # Patch the `data_access.get_game_by_id` method
-def test_game_not_found_with_dependency(
-    mock_get_game_by_id, mock_save_game, app_with_dependency
-):
+def test_game_not_found_with_dependency(mock_patched_dependencies, app_with_dependency):
     """Test that `get_or_create_game` raises 404 when the game ID is not found."""
-    mock_get_game_by_id.side_effect = FileNotFoundError()  # Simulate "not found"
+    # Simulate "not found" error
+    mock_patched_dependencies["get_game_by_id"].side_effect = FileNotFoundError()
 
     client = TestClient(app_with_dependency)
     response = client.get("/game/nonexistent_id")  # Nonexistent game_id
@@ -175,26 +161,20 @@ def test_game_not_found_with_dependency(
     # Assertions
     assert response.status_code == 404
     assert response.json() == {"detail": "Game with ID nonexistent_id not found."}
-    mock_get_game_by_id.assert_called_once_with("nonexistent_id")
+    mock_patched_dependencies["get_game_by_id"].assert_called_once_with(
+        "nonexistent_id"
+    )
 
 
-@patch(
-    "app.api.dependencies.game_storage.data_access.save_game"
-)  # Patch the `data_access.save_game` method
-@patch(
-    "app.api.dependencies.game_storage.data_access.get_game_by_id"
-)  # Patch the `data_access.get_game_by_id` method
 def test_game_saving_after_dependency_execution(
-    mock_get_game_by_id, mock_save_game, mock_game, app_with_dependency
+    mock_patched_dependencies, mock_game, app_with_dependency
 ):
     """Test that the game is saved after endpoint execution."""
-    mock_get_game_by_id.return_value = mock_game  # Mock data retrieval
-
     client = TestClient(app_with_dependency)
     response = client.get("/game/test_game_id")  # Retrieve test game
 
     # Assertions
     assert response.status_code == 200
     assert response.json() == {"game_id": "test_game_id"}
-    mock_save_game.assert_called_with("test_game_id", mock_game)
-    mock_get_game_by_id.assert_called_once_with("test_game_id")
+    mock_patched_dependencies["save_game"].assert_called_with("test_game_id", mock_game)
+    mock_patched_dependencies["get_game_by_id"].assert_called_once_with("test_game_id")
