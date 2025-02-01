@@ -1,5 +1,7 @@
 - [ ] Finish implementing the game backend
     - [ ] Add game metadata
+    - [ ] Add readme
+    - [ ] Add CI/CD
 - [ ] Implement basic console-based game manager (for 3-4 players all on the same computer)
 - [ ] Implement basic web-based game manager
 - [ ] Implement multi-client game manager
