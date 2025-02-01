@@ -3,6 +3,9 @@
     - [ ] Add readme
     - [ ] Add CI/CD
 - [ ] Implement basic console-based game manager (for 3-4 players all on the same computer)
+  - [X] Implement human players
+  - [X] Implement console game runner
+  - [ ] Implement board display
 - [ ] Implement basic web-based game manager
 - [ ] Implement multi-client game manager
 - [ ] Implement AI based spymaster

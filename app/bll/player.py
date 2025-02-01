@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
-from app.bll.types import Clue, Coordinate, TeamColor
+from app.bll.game import Game
+from app.bll.types import Clue, Coordinate, TeamColor, GameState, AgentType
 
 
 class Player:
@@ -8,9 +9,11 @@ class Player:
     Base class for game players (Spymasters and Operatives).
     """
 
-    @abstractmethod
-    def team(self) -> TeamColor:
-        pass
+    def __init__(self, team: TeamColor):
+        if team not in (AgentType.RED, AgentType.BLUE):
+            raise ValueError(f"team must be an instance of {TeamColor}, got {team}")
+
+        self.team = team
 
 
 class Spymaster(Player, ABC):
@@ -19,10 +22,12 @@ class Spymaster(Player, ABC):
     """
 
     @abstractmethod
-    def offer_clue(self, board: dict) -> Clue:
-        """
-        Offers a clue to the Operative(s) based on the current board state.
-        :param board: A dictionary representing the filtered board, containing words and discovered agents.
+    def prefix_turn(self, game: Game):
+        pass
+
+    @abstractmethod
+    def offer_clue(self) -> Clue:
+        """Offers a clue to the Operative(s) based on the current board state.
         :return: An instance of the Clue class.
         """
         pass
@@ -34,10 +39,15 @@ class Operative(Player, ABC):
     """
 
     @abstractmethod
-    def guess_word(self, clue: Clue) -> Coordinate | None:
-        """
-        Guess a word on the board based on the given clue.
-        :param clue: The clue provided by the Spymaster to guide the guess.
+    def prefix_turn(self, game: GameState):
+        pass
+
+    @abstractmethod
+    def guess_word(self, game: GameState) -> Coordinate | None:
+        """Guess a word on the board based on the given clue.
+
+        :param game: The current state of the game visible to the Operative, including the board,
+                     available words, and game progress.
         :return: The coordinate of the guessed word or None if no guess is made.
         """
         pass

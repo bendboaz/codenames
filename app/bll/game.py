@@ -78,6 +78,17 @@ class Game(BaseModel):
         """
         return self if is_spymaster else self.get_game_description_for_operative()
 
+    def set_clue(self, clue: Clue):
+        """Sets the clue for the current turn state.
+
+        This method updates the clue provided by the Spymaster for the current turn, which
+        includes the clue word and the number of guesses allowed.
+
+        :param clue: A `Clue` object containing the clue word and the number of guesses.
+        :type clue: Clue
+        """
+        self.current_turn.clue = clue
+
     def make_move(self, guess: Coordinate) -> [AgentType, GameEndStatus, Clue, bool]:
         """Process a move and return the updated game information.
 
