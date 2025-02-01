@@ -1,12 +1,16 @@
 from abc import ABC, abstractmethod
 
-from app.bll.types import Clue, Coordinate
+from app.bll.types import Clue, Coordinate, TeamColor
 
 
 class Player:
     """
     Base class for game players (Spymasters and Operatives).
     """
+
+    @abstractmethod
+    def team(self) -> TeamColor:
+        pass
 
 
 class Spymaster(Player, ABC):

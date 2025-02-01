@@ -10,7 +10,7 @@ def test_change_player():
     # Test switching from BLUE to RED
     assert change_player(AgentType.BLUE) == AgentType.RED
 
-    # Ensure function only works with valid Player types
+    # Ensure function only works with valid TeamColor types
     invalid_player = "INVALID_PLAYER"
     with pytest.raises(ValueError):
         change_player(

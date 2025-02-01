@@ -5,7 +5,10 @@ from app.dal.base_data_access import BaseDataAccess
 
 
 class LocalDataAccess(BaseDataAccess):
-    def __init__(self, root_dir: Path):
+    def __init__(self, root_dir: Path | str):
+        if not isinstance(root_dir, Path):
+            root_dir = Path(root_dir)
+
         if not root_dir.exists():
             raise ValueError(f"Path {str(root_dir)} does not exist!")
 

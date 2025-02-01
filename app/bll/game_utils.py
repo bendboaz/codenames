@@ -2,7 +2,7 @@ import itertools
 from typing import TypeVar
 
 from app.bll.defaults import DEFAULT_BOARD_SIZE
-from app.bll.types import Player, AgentType
+from app.bll.types import TeamColor, AgentType
 
 BOARD_CONTENT_TYPE = TypeVar("BOARD_CONTENT_TYPE")
 
@@ -13,7 +13,7 @@ def get_empty_board(
     return [list(itertools.repeat(empty_value, board_size)) for _ in range(board_size)]
 
 
-def change_player(player: Player) -> Player:
+def change_player(player: TeamColor) -> TeamColor:
     if player not in [AgentType.RED, AgentType.BLUE]:
         raise ValueError(
             f"Can only switch between {AgentType.RED} and {AgentType.BLUE} players, got {player}"

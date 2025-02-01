@@ -40,7 +40,7 @@ class Game(BaseModel):
             game_id=str(uuid.uuid4()),
             board=board,
             game_end_status=GameEndStatus.ONGOING,
-            current_turn=CurrentTurnState(player=board.agent_placements.starting_color),
+            current_turn=CurrentTurnState(team=board.agent_placements.starting_color),
         )
 
     def get_game_description_for_operative(self) -> GameState:
@@ -100,11 +100,11 @@ class Game(BaseModel):
             raise InvalidGuessException(str(e)) from e
 
         self.current_turn.guesses_made += 1
-        is_turn_over = (guess_outcome != self.current_turn.player) or (
+        is_turn_over = (guess_outcome != self.current_turn.team) or (
             self.current_turn.guesses_made == self.current_turn.clue.num_guesses + 1
         )
         if is_turn_over:
-            new_turn = CurrentTurnState(player=change_player(self.current_turn.player))
+            new_turn = CurrentTurnState(team=change_player(self.current_turn.team))
             self.current_turn = new_turn
 
         game_end_status = self.board.check_game_end()

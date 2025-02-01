@@ -40,11 +40,11 @@ class Card(BaseModel):
     card_type: AgentType
 
 
-Player = Literal[AgentType.RED] | Literal[AgentType.BLUE]
+TeamColor = Literal[AgentType.RED] | Literal[AgentType.BLUE]
 
 
 class CurrentTurnState(BaseModel):
-    player: Player
+    team: TeamColor
     clue: Optional[Clue] = None
     guesses_made: int = 0
 
