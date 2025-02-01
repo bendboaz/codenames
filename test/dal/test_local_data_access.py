@@ -62,12 +62,12 @@ def test_get_game_by_id_file_not_found(temp_dir):
     """Test get_game_by_id when the game file does not exist."""
     local_dal = LocalDataAccess(root_dir=temp_dir)
     with pytest.raises(FileNotFoundError, match="Game with ID 1 does not exist."):
-        local_dal.get_game_by_id(game_id=1)
+        local_dal.get_game_by_id(game_id="1")
 
 
 def test_get_game_by_id_valid(temp_dir):
     """Test get_game_by_id when the game file exists."""
-    game_id = 1
+    game_id = "1"
     game_data = '{"game_id": "1", "status": "ONGOING", "current_turn": {"player": "RED", "clue": null, "guesses_made": 0}}'
     temp_dir_games = temp_dir / "games"
     temp_dir_games.mkdir()

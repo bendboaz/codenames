@@ -14,7 +14,7 @@ class LocalDataAccess(BaseDataAccess):
 
         self.root_dir = root_dir
 
-    def get_game_by_id(self, game_id: int) -> Game:
+    def get_game_by_id(self, game_id: str) -> Game:
         game_file = self.root_dir / "games" / f"{game_id}.json"
         if not game_file.exists():
             raise FileNotFoundError(f"Game with ID {game_id} does not exist.")
@@ -22,7 +22,7 @@ class LocalDataAccess(BaseDataAccess):
         with game_file.open("r") as f:
             return Game.model_validate_json(f.read())
 
-    def save_game(self, game_id: int, game_state: Game):
+    def save_game(self, game_id: str, game_state: Game):
         games_dir = self.root_dir / "games"
         games_dir.mkdir(parents=True, exist_ok=True)
 
@@ -30,7 +30,7 @@ class LocalDataAccess(BaseDataAccess):
         with game_file.open("w") as f:
             f.write(game_state.model_dump_json())
 
-    def delete_game(self, game_id: int):
+    def delete_game(self, game_id: str):
         game_file = self.root_dir / "games" / f"{game_id}.json"
         if game_file.exists():
             game_file.unlink()

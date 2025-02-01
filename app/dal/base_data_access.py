@@ -12,7 +12,7 @@ class BaseDataAccess(ABC):
     """
 
     @abstractmethod
-    def get_game_by_id(self, game_id: int) -> Game:
+    def get_game_by_id(self, game_id: str) -> Game:
         """
         Retrieve a game by its unique ID.
 
@@ -22,7 +22,7 @@ class BaseDataAccess(ABC):
         pass
 
     @abstractmethod
-    def save_game(self, game_id: int, game_state: Game):
+    def save_game(self, game_id: str, game_state: Game):
         """
         Save a game and its current state to the storage.
 
@@ -32,7 +32,7 @@ class BaseDataAccess(ABC):
         pass
 
     @abstractmethod
-    def delete_game(self, game_id: int):
+    def delete_game(self, game_id: str):
         """
         Delete a game by its unique ID.
 
