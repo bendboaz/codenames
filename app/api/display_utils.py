@@ -36,20 +36,21 @@ def show_words(words: list[list[Card]]):
         )
         for col in range(len(words[0]))
     ]
+    max_col_width = max(col_widths)
 
     for row in words:
         print(
             " | ".join(
-                format_card_word(card).ljust(col_widths[col])
+                format_card_word(card).center(max_col_width)
                 for col, card in enumerate(row)
             )
         )
         print(
             " | ".join(
-                format_card_type(card).ljust(col_widths[col])
+                format_card_type(card).center(max_col_width)
                 for col, card in enumerate(row)
             )
         )
 
         # Print a line separator for clarity
-        print("-" * (sum(col_widths) + (3 * (len(words[0]) - 1))))
+        print("-" * (max_col_width * len(words[0]) + (3 * (len(words[0]) - 1))))

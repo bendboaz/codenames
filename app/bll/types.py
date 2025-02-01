@@ -25,7 +25,7 @@ class AgentType(Enum):
     BLUE = "BLUE"
     BLACK = "BLACK"
     INNOCENT = "INNOCENT"
-    UNKNOWN = "UNKNOWN"
+    UNKNOWN = "?"
 
 
 class GameEndStatus(Enum):
