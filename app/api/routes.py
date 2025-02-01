@@ -1,13 +1,13 @@
 from fastapi import APIRouter, HTTPException
 from typing import Dict, Any
 
-from app.api.schemas import GameState
+from app.api.schemas import OldGameState
 
 game_router = APIRouter(prefix="/game", tags=["game"])
 
 
 # Dictionary to hold mock game data for demonstration
-games: Dict[int, GameState] = {}
+games: Dict[int, OldGameState] = {}
 game_id_counter = 1
 
 
@@ -21,7 +21,7 @@ async def start_new_game():
     game_id_counter += 1
 
     # Initialize an empty game board for demonstration purposes
-    games[game_id] = GameState(board="Initialized", status="in_progress")
+    games[game_id] = OldGameState(board="Initialized", status="in_progress")
     return {"game_id": game_id, "message": "Game started!"}
 
 

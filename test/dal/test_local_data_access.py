@@ -97,7 +97,7 @@ def test_save_game_valid(temp_dir):
         game_id="1",  # Matches the `game_id` field in the `Game` class
         board=mock_board,
         game_end_status=GameEndStatus.ONGOING,
-        current_turn={"player": AgentType.RED, "clue": None, "guesses_made": 0},
+        current_turn={"team": AgentType.RED, "clue": None, "guesses_made": 0},
     )
 
     # Mock the `model_dump_json` method of the `Game` object (used in `save_game`)

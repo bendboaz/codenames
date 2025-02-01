@@ -25,7 +25,7 @@ class AgentType(Enum):
     BLUE = "BLUE"
     BLACK = "BLACK"
     INNOCENT = "INNOCENT"
-    UNKNOWN = "UNKNOWN"
+    UNKNOWN = "?"
 
 
 class GameEndStatus(Enum):
@@ -40,11 +40,11 @@ class Card(BaseModel):
     card_type: AgentType
 
 
-Player = Literal[AgentType.RED] | Literal[AgentType.BLUE]
+TeamColor = Literal[AgentType.RED] | Literal[AgentType.BLUE]
 
 
 class CurrentTurnState(BaseModel):
-    player: Player
+    team: TeamColor
     clue: Optional[Clue] = None
     guesses_made: int = 0
 
