@@ -1,62 +1,63 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Body
 from typing import Dict, Any
 
-from app.api.schemas import OldGameState
+from app.api.dependencies.game_storage import get_or_create_game
+from app.bll.game import Game
+from app.bll.types import Clue
 
 game_router = APIRouter(prefix="/game", tags=["game"])
 
 
-# Dictionary to hold mock game data for demonstration
-games: Dict[int, OldGameState] = {}
-game_id_counter = 1
-
-
 @game_router.post("/start")
-async def start_new_game():
+async def start_new_game(game: Game = Depends(get_or_create_game)):
     """
     Start a new game by creating and initializing the board.
     """
-    global game_id_counter
-    game_id = game_id_counter
-    game_id_counter += 1
-
     # Initialize an empty game board for demonstration purposes
-    games[game_id] = OldGameState(board="Initialized", status="in_progress")
-    return {"game_id": game_id, "message": "Game started!"}
+    return {"game_id": game.id}
 
 
 @game_router.get("/{game_id}/board")
-async def get_board(game_id: int):
+async def get_board(game: Game = Depends(get_or_create_game)):
     """
     Retrieve the state of the board for the given game.
     """
-    game = games.get(game_id)
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
 
-    return {"game_id": game_id, "board": game.board}
+    return {"game_id": game.game_id, "board": game.board}
 
 
-@game_router.post("/{game_id}/play")
-async def play_move(game_id: int, move: Dict[str, Any]):
+@game_router.post("/{game_id}/offer-clue")
+async def handle_clue(
+    game: Game = Depends(get_or_create_game), clue: Dict[str, Any] = Body()
+):
     """
     Submit a clue or guess for the game.
     """
-    game = games.get(game_id)
-    if not game:
-        raise HTTPException(status_code=404, detail="Game not found")
+    game.set_clue(Clue(**clue))
+    return {"game_id": game.game_id, "clue": clue}
 
-    # TODO: Implement move validation and processing here
-    return {"game_id": game_id, "move": move, "message": "Move processed!"}
+
+@game_router.post("/{game_id}/guess")
+async def play_move(
+    game: Game = Depends(get_or_create_game), move: Dict[str, Any] = Body()
+):
+    """
+    Submit a clue or guess for the game.
+    """
+    move_outcome = game.make_move(move["guess"])
+    return {"game_id": game.game_id, "move": move, "outcome": move_outcome}
 
 
 @game_router.get("/{game_id}")
-async def get_game_status(game_id: int):
+async def get_game_status(game: Game = Depends(get_or_create_game)):
     """
     Get the current game status, including progress and scores.
     """
-    game = games.get(game_id)
-    if not game:
-        raise HTTPException(status_code=404, detail="Game not found")
 
-    return {"game_id": game_id, "status": game.status}
+    return {
+        "game_id": game.game_id,
+        "victory_status": game.game_end_status,
+        "current_turn": game.current_turn,
+    }
