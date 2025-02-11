@@ -14,7 +14,7 @@ async def start_new_game(game: Game = Depends(get_or_create_game)):
     Start a new game by creating and initializing the board.
     """
     # Initialize an empty game board for demonstration purposes
-    return {"game_id": game.id}
+    return {"game_id": game.game_id}
 
 
 @game_router.get("/{game_id}/board")
