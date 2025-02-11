@@ -19,3 +19,25 @@ services:
           path: requirements.txt
     command:
       uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  react-app-dev:
+    build:
+      context: C:\Users\Boaz\WebstormProjects\codenames-frontend
+      target: development
+    ports:
+      - "0.0.0.0:5173:5173"
+    volumes:
+      - C:\Users\Boaz\WebstormProjects\codenames-frontend:/frontend
+    environment:
+      - VITE_CODENAMES_API_URL=http://127.0.0.1:8000
+    stdin_open: true
+    tty: true
+
+  react-app-prod:
+    build:
+      context: C:\Users\Boaz\WebstormProjects\codenames-frontend
+      target: production
+    ports:
+      - "0.0.0.0:3000:80"
+    environment:
+      - VITE_CODENAMES_API_URL=http://127.0.0.1:8000

@@ -1,9 +1,12 @@
 # File: app/main.py
 from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
 
 from app.api.routes import game_router
 
 app = FastAPI()
+
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"])
 
 
 @app.get("/")
